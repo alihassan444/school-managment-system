@@ -1,145 +1,20 @@
 @extends('layouts.dashboard')
-
 @section('title', 'Dashboard')
-
+@section('eyebrow', 'School operations')
 @section('content')
-<div class="page-header">
-    <h1 class="page-title">Welcome back, {{ Auth::user()->name }}!</h1>
-    <p class="page-subtitle">Here's what's happening with your learning journey today</p>
+@include('partials.flash')
+<div class="page-header d-flex justify-content-between align-items-start gap-3"><div><span class="eyebrow">{{ now()->format('F Y') }}</span><h1>Welcome back, {{ Str::before(Auth::user()->name,' ') }}</h1><p>Live admissions, fee, attendance and examination activity across the school.</p></div><div class="d-flex gap-2"><a class="btn btn-outline-primary" href="{{ route('students.create') }}">Add student</a><a class="btn btn-primary" href="{{ route('payments.create') }}">Record fee</a></div></div>
+@if($overdueCount)<div class="alert overdue-alert d-flex justify-content-between align-items-center gap-3"><span><i class="fa-solid fa-bell me-2"></i><strong>{{ $overdueCount }} overdue invoice{{ $overdueCount===1?'':'s' }}</strong> — Rs {{ number_format($overdueAmount) }} remains outstanding.</span><a href="{{ route('fees.index',['status'=>'overdue']) }}" class="btn btn-sm btn-danger">View &amp; collect</a></div>@endif
+<div class="stats-grid dashboard-stats mb-4">
+@foreach([['Active students',$activeStudents,'primary','fa-user-graduate'],['Classes',\App\Models\SchoolClass::where('is_active',true)->count(),'info','fa-school'],['Collected this month','Rs '.number_format($collectedThisMonth),'success','fa-money-bill-trend-up'],['Outstanding','Rs '.number_format($overdueAmount),'danger','fa-triangle-exclamation'],['Present today',$todayPresent.' / '.$todayMarked,'warning','fa-calendar-check']] as [$label,$value,$tone,$icon])
+<article class="stat-card tone-{{ $tone }}"><span class="stat-icon"><i class="fa-solid {{ $icon }}"></i></span><div class="stat-value">{{ $value }}</div><div class="stat-label">{{ $label }}</div></article>
+@endforeach
 </div>
-
-@if (session('status'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle me-2"></i>{{ session('status') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
-<!-- Statistics Cards -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <div>
-                <h3 class="stat-value">12</h3>
-                <p class="stat-label">Enrolled Courses</p>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up me-1"></i>2 new this month
-                </div>
-            </div>
-            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <i class="fas fa-book"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-header">
-            <div>
-                <h3 class="stat-value">8</h3>
-                <p class="stat-label">Completed Assignments</p>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up me-1"></i>3 this week
-                </div>
-            </div>
-            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <i class="fas fa-tasks"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-header">
-            <div>
-                <h3 class="stat-value">24h</h3>
-                <p class="stat-label">Learning Time</p>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up me-1"></i>4h this week
-                </div>
-            </div>
-            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <i class="fas fa-clock"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-header">
-            <div>
-                <h3 class="stat-value">87%</h3>
-                <p class="stat-label">Average Grade</p>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up me-1"></i>5% improvement
-                </div>
-            </div>
-            <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                <i class="fas fa-chart-line"></i>
-            </div>
-        </div>
-    </div>
+<div class="surface-card mb-4"><div class="card-header"><h2 class="card-title"><i class="fa-solid fa-calendar-day"></i>Upcoming exams</h2><a class="section-link" href="{{ route('exams.index') }}">Manage exams</a></div><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Exam</th><th>Class</th><th>Starts</th><th>Status</th></tr></thead><tbody>@forelse($upcomingExams as $exam)<tr><td><strong>{{ $exam->name }}</strong></td><td>{{ $exam->schoolClass->name }}</td><td>{{ $exam->starts_on->format('d M Y') }}</td><td><span class="status-pill status-{{ $exam->status }}">{{ ucfirst($exam->status) }}</span></td></tr>@empty<tr><td colspan="4"><div class="empty-state"><h5>No upcoming exams</h5><p>New exams will appear here after they are scheduled.</p></div></td></tr>@endforelse</tbody></table></div></div>
+<div class="dashboard-analytics-grid mb-4">
+<div class="surface-card"><div class="card-header"><h2 class="card-title"><i class="fa-solid fa-chart-pie"></i>Students by class</h2></div><div class="card-body"><div class="class-distribution">@php($maxClass=max((int)$classDistribution->max('total'),1)) @forelse($classDistribution as $item)<div><span>{{ $item->class }}</span><div class="report-bar"><i style="width:{{ ($item->total/$maxClass)*100 }}%"></i></div><strong>{{ $item->total }}</strong></div>@empty<p class="text-muted">No active students yet.</p>@endforelse</div></div></div>
+<div class="surface-card"><div class="card-header"><h2 class="card-title"><i class="fa-solid fa-chart-column"></i>Six-month finances</h2></div><div class="card-body"><div class="mini-column-chart">@php($maxFinance=max((float)$monthlyFinancial->max(fn($m)=>max($m['due'],$m['paid'])),1)) @foreach($monthlyFinancial as $item)<div class="mini-column"><div class="bars"><i class="due" style="height:{{ ($item['due']/$maxFinance)*100 }}%"></i><i class="paid" style="height:{{ ($item['paid']/$maxFinance)*100 }}%"></i></div><small>{{ $item['label'] }}</small></div>@endforeach</div><div class="chart-key"><span><i class="due"></i>Due</span><span><i class="paid"></i>Collected</span></div></div></div>
+<div class="surface-card"><div class="card-header"><h2 class="card-title"><i class="fa-solid fa-chart-line"></i>14-day attendance</h2></div><div class="card-body"><div class="attendance-spark">@php($maxAttendance=max((int)$attendanceFlow->max(fn($d)=>max($d['present'],$d['absent'])),1)) @foreach($attendanceFlow as $day)<div title="{{ $day['label'] }}: {{ $day['present'] }} present, {{ $day['absent'] }} absent"><i style="height:{{ ($day['present']/$maxAttendance)*100 }}%"></i><b style="height:{{ ($day['absent']/$maxAttendance)*100 }}%"></b></div>@endforeach</div><div class="chart-key"><span><i class="paid"></i>Present</span><span><i class="absent"></i>Absent</span></div></div></div>
 </div>
-
-<!-- Main Dashboard Content -->
-<div class="dashboard-grid">
-    <!-- Recent Courses -->
-    <div class="dashboard-card">
-        <div class="card-header">
-            <h3 class="card-title">Continue Learning</h3>
-            <a href="#" class="btn btn-primary btn-sm">View All Courses</a>
-        </div>
-        
-        <div class="course-item">
-            <div class="course-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <i class="fas fa-code"></i>
-            </div>
-            <div class="course-info">
-                <h4 class="course-title">Web Development Fundamentals</h4>
-                <p class="course-meta">Next: HTML & CSS Basics • Due in 2 days</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 65%;"></div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="course-item">
-            <div class="course-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <i class="fas fa-database"></i>
-            </div>
-            <div class="course-info">
-                <h4 class="course-title">Database Management Systems</h4>
-                <p class="course-meta">Next: SQL Queries • Due in 5 days</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 40%;"></div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="course-item">
-            <div class="course-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <i class="fas fa-mobile-alt"></i>
-            </div>
-            <div class="course-info">
-                <h4 class="course-title">Mobile App Development</h4>
-                <p class="course-meta">Next: React Native Basics • Due in 1 week</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 25%;"></div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="course-item">
-            <div class="course-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                <i class="fas fa-chart-bar"></i>
-            </div>
-            <div class="course-info">
-                <h4 class="course-title">Data Analytics</h4>
-                <p class="course-meta">Next: Python for Data Science • Due in 3 days</p>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 80%;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
-
+<div class="row g-4"><div class="col-xl-7"><div class="surface-card h-100"><div class="card-header"><h2 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i>Recent fee activity</h2><a class="section-link" href="{{ route('payments.index') }}">View all</a></div><div class="card-body py-1">@forelse($recentPayments as $payment)<a href="{{ route('payments.show',$payment) }}" class="activity-row text-decoration-none"><span class="activity-icon"><i class="fa-solid fa-receipt"></i></span><span class="activity-main"><strong>{{ $payment->student->name }}</strong><small>{{ $payment->receipt_number }} · {{ $payment->payment_date->format('d M Y') }}</small></span><span class="activity-amount">Rs {{ number_format($payment->amount) }}</span></a>@empty<div class="empty-state"><h5>No fee activity</h5></div>@endforelse</div></div></div><div class="col-xl-5"><div class="surface-card h-100"><div class="card-header"><h2 class="card-title"><i class="fa-solid fa-user-clock"></i>Recent admissions</h2><a class="section-link" href="{{ route('students.index') }}">View all</a></div><div class="card-body py-1">@forelse($recentStudents as $student)<a href="{{ route('students.show',$student) }}" class="activity-row text-decoration-none"><span class="student-avatar">{{ strtoupper(substr($student->name,0,1)) }}</span><span class="activity-main"><strong>{{ $student->name }}</strong><small>{{ $student->class }} · {{ ucfirst(str_replace('_',' ',$student->campus)) }}</small></span></a>@empty<div class="empty-state"><h5>No students yet</h5></div>@endforelse</div></div></div></div>
 @endsection

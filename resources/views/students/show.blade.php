@@ -1,356 +1,139 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Student Details')
+@section('title', 'Student profile')
+@section('eyebrow', 'Student records')
 
 @section('content')
 <div class="page-header">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex justify-content-between align-items-end gap-3">
         <div>
+            <span class="page-kicker">{{ $student->admission_no ?: 'Student #'.str_pad($student->id, 4, '0', STR_PAD_LEFT) }}</span>
             <h1 class="page-title">{{ $student->name }}</h1>
-            <p class="page-subtitle">Student ID: #{{ $student->id }} | Class: {{ $student->class }}</p>
+            <p class="page-subtitle">{{ $student->class }} · {{ ucfirst(str_replace('_', ' ', $student->campus)) }} · Joined {{ $student->created_at->format('M Y') }}</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('students.edit', $student) }}" class="btn btn-primary">
-                <i class="fas fa-edit me-2"></i>Edit Student
-            </a>
-            <a href="{{ route('students.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Back to Students
-            </a>
+            <a href="{{ route('students.edit', $student) }}" class="btn btn-outline-secondary"><i class="fa-solid fa-pen me-2"></i>Edit</a>
+            <a href="{{ route('payments.create', ['student_id' => $student->id]) }}" class="btn btn-primary"><i class="fa-solid fa-wallet me-2"></i>Record fee</a>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <!-- Student Information -->
-    <div class="col-lg-8">
-        <div class="dashboard-card">
+<div class="dashboard-grid">
+    <div>
+        <article class="dashboard-card">
             <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-user me-2"></i>Student Information
-                </h3>
-                <div class="badge bg-{{ $student->status == 'active' ? 'success' : 'secondary' }} fs-6">
-                    {{ ucfirst($student->status) }}
-                </div>
+                <h2 class="card-title"><i class="fa-solid fa-id-card me-2"></i>Student information</h2>
+                <span class="badge bg-{{ $student->status === 'active' ? 'success' : 'secondary' }}">{{ ucfirst($student->status) }}</span>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <div class="info-item">
-                            <label class="info-label">Full Name</label>
-                            <div class="info-value">{{ $student->name }}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6 mb-4">
-                        <div class="info-item">
-                            <label class="info-label">Father's Name</label>
-                            <div class="info-value">{{ $student->father_name }}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6 mb-4">
-                        <div class="info-item">
-                            <label class="info-label">Class</label>
-                            <div class="info-value">
-                                <span class="badge bg-info fs-6">{{ $student->class }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6 mb-4">
-                        <div class="info-item">
-                            <label class="info-label">Contact Number</label>
-                            <div class="info-value">
-                                {{ $student->contact ?: 'Not provided' }}
-                                @if($student->contact)
-                                    <a href="tel:{{ $student->contact }}" class="btn btn-sm btn-outline-primary ms-2">
-                                        <i class="fas fa-phone"></i>
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6 mb-4">
-                        <div class="info-item">
-                            <label class="info-label">Mobile Number</label>
-                            <div class="info-value">
-                                {{ $student->mobile ?: 'Not provided' }}
-                                @if($student->mobile)
-                                    <a href="tel:{{ $student->mobile }}" class="btn btn-sm btn-outline-primary ms-2">
-                                        <i class="fas fa-mobile-alt"></i>
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-6 mb-4">
-                        <div class="info-item">
-                            <label class="info-label">Registration Date</label>
-                            <div class="info-value">{{ $student->created_at->format('M d, Y') }}</div>
-                        </div>
-                    </div>
-                    
+                <div class="row g-3">
+                    <div class="col-md-6"><div class="info-item"><span class="info-label">Full name</span><span class="info-value">{{ $student->name }}</span></div></div>
+                    <div class="col-md-6"><div class="info-item"><span class="info-label">Father's name</span><span class="info-value">{{ $student->father_name }}</span></div></div>
+                    <div class="col-md-6"><div class="info-item"><span class="info-label">Admission / roll no.</span><span class="info-value">{{ $student->admission_no ?: '—' }} / {{ $student->roll_no ?: '—' }}</span></div></div>
+                    <div class="col-md-6"><div class="info-item"><span class="info-label">Date of birth / gender</span><span class="info-value">{{ $student->date_of_birth?->format('d M Y') ?: '—' }} / {{ ucfirst($student->gender ?: '—') }}</span></div></div>
+                    <div class="col-md-6"><div class="info-item"><span class="info-label">Class</span><span class="info-value">{{ $student->class }}</span></div></div>
+                    <div class="col-md-6"><div class="info-item"><span class="info-label">Session / section</span><span class="info-value">{{ $student->academicSession?->name ?: '—' }} / {{ $student->section?->name ?: '—' }}</span></div></div>
+                    <div class="col-md-6"><div class="info-item"><span class="info-label">Campus</span><span class="info-value">{{ ucfirst(str_replace('_', ' ', $student->campus)) }}</span></div></div>
+                    <div class="col-md-6"><div class="info-item"><span class="info-label">Monthly fee</span><span class="info-value">Rs {{ number_format($student->monthly_fee, 0) }}</span></div></div>
+                    <div class="col-md-6"><div class="info-item"><span class="info-label">Contact</span><span class="info-value">{{ $student->contact ?: 'Not provided' }}</span></div></div>
+                    <div class="col-md-6"><div class="info-item"><span class="info-label">Mobile</span><span class="info-value">{{ $student->mobile ?: 'Not provided' }}</span></div></div>
+                    <div class="col-md-6"><div class="info-item"><span class="info-label">Guardian</span><span class="info-value">{{ $student->guardian?->name ?: $student->father_name }} · {{ $student->guardian?->phone ?: ($student->mobile ?: 'No phone') }}</span></div></div>
                     @if($student->address)
-                        <div class="col-12 mb-4">
-                            <div class="info-item">
-                                <label class="info-label">Address</label>
-                                <div class="info-value">{{ $student->address }}</div>
-                            </div>
-                        </div>
+                        <div class="col-12"><div class="info-item"><span class="info-label">Address</span><span class="info-value">{{ $student->address }}</span></div></div>
                     @endif
                 </div>
             </div>
-        </div>
-        
-         <!-- Payment History -->
-         <div class="dashboard-card">
-             <div class="card-header">
-                 <h3 class="card-title">
-                     <i class="fas fa-history me-2"></i>Payment History
-                 </h3>
-                 <a href="{{ route('payments.create', ['student_id' => $student->id]) }}" class="btn btn-outline-light btn-sm">
-                     <i class="fas fa-plus me-1"></i>Add Payment
-                 </a>
-             </div>
-             <div class="card-body">
-                 @if($student->payments->count() > 0)
-                     <div class="table-responsive">
-                         <table class="table table-hover">
-                             <thead>
-                                 <tr>
-                                     <th>Date</th>
-                                     <th>Receipt No.</th>
-                                     
-                                     <th class="text-end">Amount</th>
-                                     <th>Actions</th>
-                                 </tr>
-                             </thead>
-                             <tbody>
-                                 @foreach($student->payments->take(10) as $payment)
-                                     <tr>
-                                         <td>{{ $payment->payment_date->format('d M Y') }}</td>
-                                         <td>
-                                             <span class="badge bg-primary">{{ $payment->receipt_number }}</span>
-                                         </td>
-                                         
-                                         <td class="text-end">
-                                             <strong class="text-success">Rs {{ number_format($payment->amount, 0) }}</strong>
-                                         </td>
-                                         <td>
-                                             <div class="btn-group" role="group">
-                                                 <a href="{{ route('payments.show', $payment) }}" 
-                                                    class="btn btn-outline-info btn-sm" title="View Receipt">
-                                                     <i class="fas fa-receipt"></i>
-                                                 </a>
-                                                 <button type="button" class="btn btn-outline-danger btn-sm" 
-                                                         onclick="deletePayment({{ $payment->id }})" title="Delete Payment">
-                                                     <i class="fas fa-trash"></i>
-                                                 </button>
-                                             </div>
-                                         </td>
-                                     </tr>
-                                 @endforeach
-                             </tbody>
-                         </table>
-                     </div>
-                     
-                     @if($student->payments->count() > 10)
-                         <div class="text-center mt-3">
-                             <small class="text-muted">Showing latest 10 payments</small>
-                         </div>
-                     @endif
-                 @else
-                     <div class="text-center py-4">
-                         <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
-                         <p class="text-muted">No payment history found</p>
-                         <a href="{{ route('payments.create', ['student_id' => $student->id]) }}" class="btn btn-primary">
-                             <i class="fas fa-plus me-2"></i>Record First Payment
-                         </a>
-                     </div>
-                 @endif
-             </div>
-         </div>
-    </div>
-    
-    <!-- Right column simplified -->
-    <div class="col-lg-4">
-        <div class="dashboard-card">
+        </article>
+
+        <article class="dashboard-card">
             <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-bolt me-2"></i>Quick Actions
-                </h3>
+                <div><h2 class="card-title"><i class="fa-solid fa-people-roof me-2"></i>Family &amp; siblings</h2><small class="text-muted">Family links never alter admission or fee history.</small></div>
+                @if($student->family && in_array(Auth::user()->role ?: 'admin',['admin','accountant']))<a class="btn btn-outline-primary btn-sm" href="{{ route('families.show',$student->family) }}">Open family</a>@endif
             </div>
             <div class="card-body">
-                 <div class="d-grid gap-2">
-                     <a href="{{ route('payments.create', ['student_id' => $student->id]) }}" class="btn btn-success">
-                         <i class="fas fa-money-bill me-2"></i>Record Payment
-                     </a>
-                     <a href="{{ route('payments.fee-bill', $student) }}" class="btn btn-info" target="_blank">
-                         <i class="fas fa-print me-2"></i>Print Fee Bill
-                     </a>
-                     <a href="{{ route('students.edit', $student) }}" class="btn btn-primary">
-                         <i class="fas fa-edit me-2"></i>Edit Student
-                     </a>
-                     <button class="btn btn-danger" onclick="deleteStudent({{ $student->id }})">
-                         <i class="fas fa-trash me-2"></i>Delete Student
-                     </button>
-                 </div>
+                @if($student->family)
+                    <div class="student-family-heading"><div><span class="family-code">{{ $student->family->family_code }}</span><strong>{{ $student->family->display_name }}</strong><small>{{ $student->family->primaryGuardian?->name }} · {{ $student->family->primaryGuardian?->phone }}</small></div></div>
+                    <div class="sibling-strip mt-3">
+                        @foreach($student->family->students as $sibling)
+                        <a href="{{ route('students.show',$sibling) }}" class="sibling-mini-card {{ $sibling->id===$student->id?'is-current':'' }}"><span>{{ strtoupper(substr($sibling->name,0,1)) }}</span><div><strong>{{ $sibling->name }}</strong><small>{{ $sibling->schoolClass?->name ?: $sibling->class }} · {{ ucfirst($sibling->status) }}</small></div></a>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="empty-state py-3"><span class="empty-state-icon"><i class="fa-solid fa-link"></i></span><h5>No family linked</h5><p>An administrator can link this student from Families &amp; Guardians.</p>@if((Auth::user()->role ?: 'admin')==='admin')<a class="btn btn-primary btn-sm" href="{{ route('families.index',['search'=>$student->name]) }}">Find or create family</a>@endif</div>
+                @endif
             </div>
-        </div>
-        <!-- Quick Actions -->
-        <div class="dashboard-card">
+        </article>
+
+        <article class="dashboard-card">
+            <div class="card-header"><h2 class="card-title"><i class="fa-solid fa-timeline me-2"></i>Enrollment history</h2></div>
+            <div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Session</th><th>Class</th><th>Section</th><th>Status</th></tr></thead><tbody>@forelse($student->enrollments as $enrollment)<tr><td>{{ $enrollment->academicSession?->name }}</td><td>{{ $enrollment->schoolClass?->name }}</td><td>{{ $enrollment->section?->name ?: '—' }}</td><td><span class="status-pill status-paid">{{ ucfirst($enrollment->status) }}</span></td></tr>@empty<tr><td colspan="4" class="text-muted">No enrollment history yet.</td></tr>@endforelse</tbody></table></div>
+        </article>
+
+        <article class="dashboard-card">
             <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fas fa-bolt me-2"></i>Quick Actions
-                </h3>
+                <div>
+                    <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left me-2"></i>Fee history</h2>
+                    <small class="text-muted">{{ $student->payments->count() }} {{ Str::plural('receipt', $student->payments->count()) }}</small>
+                </div>
+                <a href="{{ route('payments.create', ['student_id' => $student->id]) }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1"></i>Add fee</a>
             </div>
-            <div class="card-body">
-                 <div class="d-grid gap-2">
-                     <a href="{{ route('payments.create', ['student_id' => $student->id]) }}" class="btn btn-success">
-                         <i class="fas fa-money-bill me-2"></i>Record Payment
-                     </a>
-                     
-                     <a href="{{ route('payments.fee-bill', $student) }}" class="btn btn-info" target="_blank">
-                         <i class="fas fa-print me-2"></i>Print Fee Bill
-                     </a>
-                     
-                     <a href="{{ route('students.edit', $student) }}" class="btn btn-primary">
-                         <i class="fas fa-edit me-2"></i>Edit Student
-                     </a>
-                     
-                     <button class="btn btn-danger" onclick="deleteStudent({{ $student->id }})">
-                         <i class="fas fa-trash me-2"></i>Delete Student
-                     </button>
-                 </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead><tr><th>Date</th><th>Receipt</th><th class="d-none d-md-table-cell">Note</th><th class="text-end">Amount</th><th class="text-end">Action</th></tr></thead>
+                    <tbody>
+                        @forelse($student->payments as $payment)
+                            <tr>
+                                <td>{{ $payment->payment_date->format('d M Y') }}</td>
+                                <td><span class="badge bg-primary">{{ $payment->receipt_number }}</span></td>
+                                <td class="d-none d-md-table-cell text-muted">{{ Str::limit($payment->description ?: '—', 40) }}</td>
+                                <td class="text-end"><strong class="amount-highlight">Rs {{ number_format($payment->amount, 0) }}</strong></td>
+                                <td class="text-end"><a href="{{ route('payments.show', $payment) }}" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-receipt"></i></a></td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5"><div class="empty-state"><span class="empty-state-icon"><i class="fa-solid fa-receipt"></i></span><h5>No fee history</h5><p>No payments have been recorded for this student.</p></div></td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        </div>
+        </article>
     </div>
+
+    <aside>
+        <article class="dashboard-card">
+            <div class="card-header"><h2 class="card-title"><i class="fa-solid fa-chart-simple me-2"></i>Fee summary</h2></div>
+            <div class="card-body">
+                <div class="stat-value mb-1">Rs {{ number_format($remainingThisMonth, 0) }}</div>
+                <p class="text-muted mb-4">Remaining for {{ now()->format('F') }}</p>
+                <div class="info-item mb-3"><span class="info-label">Monthly fee</span><span class="info-value">Rs {{ number_format($student->monthly_fee, 0) }}</span></div>
+                <div class="info-item mb-3"><span class="info-label">Paid this month</span><span class="info-value">Rs {{ number_format($paidThisMonth, 0) }}</span></div>
+                <div class="info-item mb-3"><span class="info-label">Latest payment</span><span class="info-value">{{ optional($student->payments->first())->payment_date?->format('d M Y') ?: 'No payment yet' }}</span></div>
+                <div class="info-item mb-3"><span class="info-label">All-time collected</span><span class="info-value">Rs {{ number_format($student->payments->sum('amount'), 0) }}</span></div>
+                <div class="info-item"><span class="info-label">Receipts issued</span><span class="info-value">{{ $student->payments->count() }}</span></div>
+            </div>
+        </article>
+
+        <article class="dashboard-card">
+            <div class="card-header"><h2 class="card-title"><i class="fa-solid fa-bolt me-2"></i>Actions</h2></div>
+            <div class="card-body d-grid gap-2">
+                <a href="{{ route('payments.create', ['student_id' => $student->id]) }}" class="btn btn-primary"><i class="fa-solid fa-wallet me-2"></i>Record fee</a>
+                <a href="{{ route('students.edit', $student) }}" class="btn btn-outline-secondary"><i class="fa-solid fa-pen me-2"></i>Edit record</a>
+                <a href="{{ route('students.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-2"></i>All students</a>
+                <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fa-solid fa-trash me-2"></i>Delete student</button>
+            </div>
+        </article>
+    </aside>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete <strong>{{ $student->name }}</strong>? This action cannot be undone.
-            </div>
+            <div class="modal-header"><h5 class="modal-title">Delete student?</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">This permanently removes <strong>{{ $student->name }}</strong> and all linked fee records.</div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="deleteForm" method="POST" action="{{ route('students.destroy', $student) }}" style="display: inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Delete Student</button>
-                </form>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ route('students.destroy', $student) }}">@csrf @method('DELETE')<button type="submit" class="btn btn-danger">Delete permanently</button></form>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 16px 16px 0 0 !important;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    border-bottom: none;
-}
-
-.card-header .card-title {
-    color: white !important;
-    margin: 0;
-    font-weight: 600;
-}
-
-.card-header .card-title i {
-    color: white !important;
-}
-
-.card-header h3 {
-    color: white !important;
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0;
-    display: flex;
-    align-items: center;
-}
-
-.card-header h3 i {
-    color: white !important;
-    margin-right: 0.5rem;
-}
-
-.info-item {
-    padding: 0.5rem 0;
-}
-
-.info-label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.25rem;
-}
-
-.info-value {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #374151;
-}
-
-.fee-item .fee-label {
-    color: #6b7280;
-    font-size: 0.95rem;
-}
-
-.fee-item .fee-value {
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-.alert {
-    border-radius: 12px;
-    border: none;
-}
-
-.btn {
-    border-radius: 8px;
-    font-weight: 500;
-}
-
-.badge {
-    border-radius: 8px;
-}
-</style>
-
-<script>
-function deleteStudent(id) {
-    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    modal.show();
-}
-
-function deletePayment(paymentId) {
-    if (confirm('Are you sure you want to delete this payment? This will update the student\'s balance.')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/payments/${paymentId}`;
-        form.innerHTML = `
-            @csrf
-            @method('DELETE')
-        `;
-        document.body.appendChild(form);
-        form.submit();
-    }
-}
-</script>
 @endsection

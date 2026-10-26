@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Al Suffaa School logo</title>
+  <desc id="desc">An open book beneath a rising golden light in a rounded school crest.</desc>
+  <defs>
+    <linearGradient id="crest" x1="8" y1="5" x2="56" y2="59" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#173f5c"/>
+      <stop offset="1" stop-color="#081b2a"/>
+    </linearGradient>
+    <linearGradient id="page" x1="14" y1="27" x2="50" y2="49" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#dff5ee"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="18" fill="url(#crest)"/>
+  <path d="M32 10l3.2 5.1 5.8 1.4-3.8 4.4.5 6-5.7-2.3-5.7 2.3.5-6-3.8-4.4 5.8-1.4L32 10z" fill="#f4b740"/>
+  <path d="M13 28.5c7.2-1.5 13.2-.1 19 4.2v17c-5.8-4.3-11.8-5.7-19-4.2v-17z" fill="url(#page)"/>
+  <path d="M51 28.5c-7.2-1.5-13.2-.1-19 4.2v17c5.8-4.3 11.8-5.7 19-4.2v-17z" fill="url(#page)"/>
+  <path d="M18 34.5c4.1-.2 7.5.7 10.5 2.6M18 39c4.1-.2 7.5.7 10.5 2.6M46 34.5c-4.1-.2-7.5.7-10.5 2.6M46 39c-4.1-.2-7.5.7-10.5 2.6" fill="none" stroke="#0e8f79" stroke-width="1.7" stroke-linecap="round" opacity=".8"/>
+  <path d="M13 49c7.3-1.4 13.6.1 19 4.4 5.4-4.3 11.7-5.8 19-4.4" fill="none" stroke="#f4b740" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

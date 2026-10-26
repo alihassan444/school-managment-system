@@ -2,8 +2,9 @@
 
 @section('content')
 <div class="w-100">
-    <h2 class="form-title">Welcome Back!</h2>
-    <p class="form-subtitle">Sign in to continue your learning journey</p>
+    <span class="page-kicker">Staff portal</span>
+    <h2 class="form-title">Welcome back</h2>
+    <p class="form-subtitle">Sign in to manage students and fee records.</p>
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
@@ -27,12 +28,11 @@
             <label for="password" class="form-label">
                 <i class="fas fa-lock me-2"></i>Password
             </label>
-            <div class="position-relative">
+            <div class="password-field">
                 <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" 
                        name="password" required autocomplete="current-password"
                        placeholder="Enter your password">
-                <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent" 
-                        onclick="togglePassword('password')" style="z-index: 10;">
+                <button type="button" class="password-toggle" onclick="togglePassword('password')" aria-label="Show or hide password">
                     <i class="fas fa-eye text-muted" id="password-toggle"></i>
                 </button>
             </div>
@@ -60,20 +60,22 @@
             @endif
         </div>
 
-        <button type="submit" class="btn btn-primary">
-            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+        <button type="submit" class="btn btn-primary btn-lg w-100">
+            <i class="fas fa-arrow-right-to-bracket me-2"></i>Sign in to portal
         </button>
     </form>
 
-    <div class="divider">
-        <span>Don't have an account?</span>
-    </div>
+    @if (Route::has('register'))
+        <div class="divider">
+            <span>Don't have an account?</span>
+        </div>
 
-    <div class="text-center">
-        <a href="{{ route('register') }}" class="auth-link">
-            <i class="fas fa-user-plus me-2"></i>Create new account
-        </a>
-    </div>
+        <div class="text-center">
+            <a href="{{ route('register') }}" class="auth-link">
+                <i class="fas fa-user-plus me-2"></i>Create new account
+            </a>
+        </div>
+    @endif
 </div>
 
 <script>

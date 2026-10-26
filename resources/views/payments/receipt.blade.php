@@ -1,284 +1,123 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Receipt - {{ $payment->receipt_number }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Receipt {{ $payment->receipt_number }} · Al Suffaa School</title>
+    <link rel="icon" href="{{ asset('images/al-suffaa-school-crest.png') }}" type="image/png">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=dm-sans:400,500,600,700|manrope:600,700,800" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     <style>
+        * { box-sizing: border-box; }
+        body { min-height: 100vh; margin: 0; padding: 28px 14px; color: #101820; font-family: 'DM Sans', sans-serif; background: #edf2ef; }
+        .receipt-toolbar { width: min(920px, 100%); display: flex; justify-content: space-between; gap: 10px; margin: 0 auto 14px; }
+        .receipt-paper { width: min(920px, 100%); margin: auto; padding: 24px; border: 1px solid #d5ded9; background: #fff; box-shadow: 0 24px 70px rgba(11,31,51,.14); }
+        .school-header { display: grid; grid-template-columns: 88px minmax(0,1fr) auto; align-items: center; gap: 17px; }
+        .school-logo { width: 82px; height: 82px; display: block; object-fit: contain; }
+        .school-name { margin: 0; color: #081a29; font: 800 clamp(1.7rem,4vw,2.75rem) 'Manrope',sans-serif; letter-spacing: .035em; text-transform: uppercase; }
+        .campus-lines { margin-top: 5px; font-size: .83rem; font-weight: 700; line-height: 1.55; }
+        .receipt-ref { min-width: 155px; padding: 10px 12px; border: 2px solid #101820; text-align: center; }
+        .receipt-ref span,.receipt-ref strong { display: block; }
+        .receipt-ref span { font-size: .65rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+        .receipt-ref strong { margin-top: 4px; font: 800 1rem 'Manrope',sans-serif; }
+        .receipt-heading { width: fit-content; margin: 18px auto; padding: 7px 28px; border: 3px solid #101820; border-radius: 7px; font: 800 1.15rem 'Manrope',sans-serif; }
+        .student-box { position: relative; display: grid; grid-template-columns: minmax(0,1fr) 245px; border: 3px solid #101820; }
+        .student-details { display: grid; gap: 7px; padding: 20px; }
+        .student-line { display: grid; grid-template-columns: 160px minmax(0,1fr); gap: 12px; }
+        .student-line span { font-weight: 800; }
+        .student-line strong { font-weight: 600; }
+        .date-box { align-self: start; display: grid; grid-template-columns: 78px 1fr; padding: 10px 14px; border-left: 3px solid #101820; border-bottom: 3px solid #101820; font-size: 1rem; }
+        .date-box span { font-weight: 800; }
+        .fee-tables { display: grid; grid-template-columns: 1.15fr .85fr; gap: 18px; margin-top: 10px; }
+        .receipt-table { width: 100%; border: 3px solid #101820; border-collapse: collapse; }
+        .receipt-table td { padding: 9px 14px; font-size: .95rem; }
+        .receipt-table td:first-child { font-weight: 800; }
+        .receipt-table td:last-child { width: 145px; border-left: 2px solid #101820; text-align: right; font-variant-numeric: tabular-nums; }
+        .summary-table tr:nth-last-child(-n+3) { border-top: 1px solid #cbd4cf; }
+        .summary-table tr:last-child { background: #eef8f4; }
+        .summary-table tr:last-child td { font-size: 1.05rem; }
+        .receipt-message { display: grid; place-content: center; min-height: 96px; margin-top: 10px; padding: 14px; border: 3px solid #101820; color: #4d5c58; text-align: center; font-size: 1rem; line-height: 1.5; }
+        .receipt-status { display: inline-flex; align-items: center; gap: 7px; margin-top: 12px; padding: 7px 11px; border-radius: 999px; color: #08705f; background: #dff5ee; font-size: .72rem; font-weight: 800; }
+        .receipt-note { margin: 14px 0 0; padding: 11px 13px; border-left: 4px solid #0e8f79; color: #52635e; background: #f5f8f6; font-size: .8rem; }
+        .receipt-footer { display: flex; justify-content: space-between; gap: 20px; margin-top: 16px; color: #63736e; font-size: .7rem; }
+        @media(max-width:700px){
+            body{padding:12px 8px}.receipt-paper{padding:15px}.school-header{grid-template-columns:62px minmax(0,1fr)}.school-logo{width:58px;height:58px}.receipt-ref{grid-column:1/-1;width:100%}.school-name{font-size:1.35rem}.campus-lines{font-size:.68rem}.student-box{grid-template-columns:1fr}.date-box{grid-row:1;border-left:0;border-bottom:3px solid #101820}.student-line{grid-template-columns:120px 1fr}.fee-tables{grid-template-columns:1fr;gap:10px}.receipt-footer{flex-direction:column}.receipt-table td{padding:8px 10px;font-size:.84rem}
+        }
+        @page { size: A5 landscape; margin: 8mm; }
         @media print {
-            .no-print { display: none !important; }
-            body { margin: 0; }
-            .container { max-width: none; }
-            @page { size: A4; margin: 12mm; }
-        }
-        
-        .receipt-container {
-            max-width: 800px;
-            margin: 0 auto;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .school-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-align: center;
-            padding: 30px 20px;
-        }
-        
-        .school-name {
-            font-size: 2.2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .campus-info {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            opacity: 0.9;
-        }
-        
-        .receipt-header {
-            background: #f8f9fa;
-            padding: 20px;
-            border-bottom: 2px dashed #dee2e6;
-        }
-        
-        .receipt-title {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #667eea;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .receipt-info {
-            padding: 30px;
-        }
-        
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .info-row:last-child {
-            border-bottom: none;
-        }
-        
-        .info-label {
-            font-weight: 600;
-            color: #666;
-            min-width: 150px;
-        }
-        
-        .info-value {
-            color: #333;
-            text-align: right;
-        }
-        
-        .amount-section {
-            background: #e7f3ff;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .amount-paid {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #28a745;
-            margin-bottom: 10px;
-        }
-        
-        .amount-words {
-            font-style: italic;
-            color: #666;
-            font-size: 1.1rem;
-        }
-        
-        .thank-you {
-            text-align: center;
-            padding: 20px;
-            background: #f8f9fa;
-            margin-top: 30px;
-            border-radius: 8px;
-        }
-        
-        .watermark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 6rem;
-            color: rgba(102, 126, 234, 0.1);
-            font-weight: bold;
-            z-index: -1;
-            pointer-events: none;
-        }
-        
-        .signature-section {
-            margin-top: 40px;
-            display: flex;
-            justify-content: space-between;
-            padding-top: 20px;
-            border-top: 1px solid #dee2e6;
-        }
-        
-        .signature-box {
-            text-align: center;
-            min-width: 200px;
-        }
-        
-        .signature-line {
-            border-top: 1px solid #333;
-            margin-bottom: 5px;
-            height: 40px;
+            body { padding: 0; background: #fff; }
+            .receipt-toolbar { display: none; }
+            .receipt-paper { width: 100%; padding: 0; border: 0; box-shadow: none; }
+            .school-name { font-size: 2rem; }
+            .receipt-heading { margin: 10px auto; }
+            .student-details { padding: 12px 16px; }
+            .receipt-table td { padding: 6px 12px; font-size: .82rem; }
+            .receipt-message { min-height: 70px; }
         }
     </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <!-- Print Button -->
-        <div class="no-print mb-3">
-            <button onclick="window.print()" class="btn btn-primary">
-                <i class="fas fa-print me-2"></i>Print Receipt
-            </button>
-            <a href="{{ route('students.show', $payment->student) }}" class="btn btn-outline-secondary ms-2">
-                <i class="fas fa-arrow-left me-2"></i>Back to Student
-            </a>
-        </div>
-
-        <div class="receipt-container position-relative">
-            <!-- Watermark -->
-            <div class="watermark">PAID</div>
-            
-            <!-- School Header -->
-            <div class="school-header">
-                <div class="school-name">Al Suffaa School</div>
-                <div class="campus-info">
-                    <div><strong>Campus 1:</strong> Gulshan Town Thokar Niaz Baig Lahore - 0300-6694291</div>
-                    <div><strong>Campus 2:</strong> 43 C, Rana Town Main Gt Road - 0344-4008464</div>
-                </div>
-            </div>
-
-            <!-- Receipt Header -->
-            <div class="receipt-header">
-                <div class="receipt-title">PAYMENT RECEIPT</div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <strong>Receipt No:</strong> {{ $payment->receipt_number }}
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <strong>Date:</strong> {{ $payment->payment_date->format('d M Y') }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Receipt Information -->
-            <div class="receipt-info">
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <h5 class="text-primary mb-3">Student Details</h5>
-                        <div class="info-row">
-                            <span class="info-label">Student Name:</span>
-                            <span class="info-value">{{ $payment->student->name }}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Father's Name:</span>
-                            <span class="info-value">{{ $payment->student->father_name }}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Class:</span>
-                            <span class="info-value">{{ $payment->student->class }}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Student ID:</span>
-                            <span class="info-value">{{ str_pad($payment->student->id, 4, '0', STR_PAD_LEFT) }}</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <h5 class="text-primary mb-3">Payment Details</h5>
-                        <div class="info-row">
-                            <span class="info-label">Description:</span>
-                            <span class="info-value">{{ $payment->description ?: 'N/A' }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Breakdown removed in simplified flow -->
-
-                <!-- Amount Section -->
-                <div class="amount-section">
-                    <div class="amount-paid">Rs {{ number_format($payment->amount, 0) }}</div>
-                    <div class="amount-words">
-                        {{ ucwords(numberToWords($payment->amount)) }} Only
-                    </div>
-                </div>
-
-                @if($payment->description)
-                <div class="alert alert-info">
-                    <strong>Note:</strong> {{ $payment->description }}
-                </div>
-                @endif
-
-                <!-- Balance info removed in simplified system -->
-
-                <!-- Signature Section -->
-                <div class="signature-section">
-                    <div class="signature-box">
-                        <div class="signature-line"></div>
-                        <small>Student/Parent Signature</small>
-                    </div>
-                    <div class="signature-box">
-                        <div class="signature-line"></div>
-                        <small>Received By</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Thank You Section -->
-            <div class="thank-you">
-                <h5 class="text-primary mb-2">Thank You for Your Payment!</h5>
-                <p class="mb-0">This receipt is computer generated and valid without signature.</p>
-                <small class="text-muted">For queries, contact school office during working hours.</small>
-            </div>
-        </div>
+    <div class="receipt-toolbar no-print">
+        <a href="{{ route('payments.index') }}" class="btn btn-outline-secondary"><i class="fa-solid fa-arrow-left me-2"></i>Fee ledger</a>
+        <button type="button" onclick="window.print()" class="btn btn-primary"><i class="fa-solid fa-print me-2"></i>Print receipt</button>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <main class="receipt-paper">
+        <header class="school-header">
+            <img class="school-logo" src="{{ asset('images/al-suffaa-school-crest.png') }}" alt="Al Suffaa School crest">
+            <div>
+                <h1 class="school-name">Al Suffaa School</h1>
+                <div class="campus-lines">
+                    <div>Campus 1: Gulshan Town, TNB Lahore · 0300-6694291</div>
+                    <div>Campus 2: 43-C Rana Town, Main GT Road · 0344-4008464</div>
+                </div>
+            </div>
+            <div class="receipt-ref"><span>Receipt number</span><strong>{{ $payment->receipt_number }}</strong></div>
+        </header>
+
+        <div class="receipt-heading">Fee Receipt</div>
+
+        <section class="student-box">
+            <div class="student-details">
+                <div class="student-line"><span>Student's Name</span><strong>{{ $payment->student->name }}</strong></div>
+                <div class="student-line"><span>Father's Name</span><strong>{{ $payment->student->father_name }}</strong></div>
+                <div class="student-line"><span>Class</span><strong>{{ $payment->student->class }}</strong></div>
+                <div class="student-line"><span>Campus</span><strong>{{ ucfirst(str_replace('_', ' ', $payment->student->campus)) }}</strong></div>
+            </div>
+            <div class="date-box"><span>Date:</span><strong>{{ $payment->payment_date->format('d-m-y') }}</strong></div>
+        </section>
+
+        <section class="fee-tables">
+            <table class="receipt-table" aria-label="Fee charges">
+                <tbody>
+                    <tr><td>Monthly Fee</td><td>{{ number_format($payment->monthly_fee_amount, 0) }}</td></tr>
+                    <tr><td>Uniform</td><td>{{ number_format($payment->uniform_amount, 0) }}</td></tr>
+                    <tr><td>Books</td><td>{{ number_format($payment->books_amount, 0) }}</td></tr>
+                    <tr><td>Paper Fund</td><td>{{ number_format($payment->paper_fund_amount, 0) }}</td></tr>
+                    <tr><td>Others</td><td>{{ number_format($payment->other_amount, 0) }}</td></tr>
+                    <tr><td>Previous Balance</td><td>{{ number_format($payment->previous_balance_amount, 0) }}</td></tr>
+                </tbody>
+            </table>
+
+            <div>
+                <table class="receipt-table summary-table" aria-label="Payment summary">
+                    <tbody>
+                        <tr><td>Discount</td><td>{{ number_format($payment->discount_amount, 0) }}</td></tr>
+                        <tr><td>Total</td><td>{{ number_format($payment->total_amount, 0) }}</td></tr>
+                        <tr><td>Paid</td><td>{{ number_format($payment->amount, 0) }}</td></tr>
+                        <tr><td>Remaining</td><td>{{ number_format($payment->remaining_amount, 0) }}</td></tr>
+                    </tbody>
+                </table>
+                <div class="receipt-message">Computer-generated slip.<br>Signature or stamp is not required.</div>
+            </div>
+        </section>
+
+        @php($paymentStatus = $payment->remaining_amount > 0 ? ($payment->amount > 0 ? 'Partially paid' : 'Payment pending') : 'Paid in full')
+        <span class="receipt-status"><i class="fa-solid fa-circle-check"></i>{{ $paymentStatus }}</span>
+        @if($payment->description)<p class="receipt-note"><strong>Note:</strong> {{ $payment->description }}</p>@endif
+        <footer class="receipt-footer"><span>Keep this receipt for your records.</span><span>Al Suffaa School · Lahore</span></footer>
+    </main>
 </body>
 </html>
-
-@php
-function numberToWords($number) {
-    $ones = array(
-        0 => 'zero', 1 => 'one', 2 => 'two', 3 => 'three', 4 => 'four', 5 => 'five',
-        6 => 'six', 7 => 'seven', 8 => 'eight', 9 => 'nine', 10 => 'ten',
-        11 => 'eleven', 12 => 'twelve', 13 => 'thirteen', 14 => 'fourteen', 15 => 'fifteen',
-        16 => 'sixteen', 17 => 'seventeen', 18 => 'eighteen', 19 => 'nineteen'
-    );
-    
-    $tens = array(
-        2 => 'twenty', 3 => 'thirty', 4 => 'forty', 5 => 'fifty',
-        6 => 'sixty', 7 => 'seventy', 8 => 'eighty', 9 => 'ninety'
-    );
-    
-    if ($number < 20) {
-        return $ones[$number];
-    } elseif ($number < 100) {
-        return $tens[intval($number / 10)] . ($number % 10 ? ' ' . $ones[$number % 10] : '');
-    } elseif ($number < 1000) {
-        return $ones[intval($number / 100)] . ' hundred' . ($number % 100 ? ' ' . numberToWords($number % 100) : '');
-    } elseif ($number < 1000000) {
-        return numberToWords(intval($number / 1000)) . ' thousand' . ($number % 1000 ? ' ' . numberToWords($number % 1000) : '');
-    } else {
-        return numberToWords(intval($number / 1000000)) . ' million' . ($number % 1000000 ? ' ' . numberToWords($number % 1000000) : '');
-    }
-}
-@endphp
